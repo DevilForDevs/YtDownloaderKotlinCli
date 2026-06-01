@@ -1,6 +1,8 @@
 # YtDownloaderKotlinCli
 
-Kotlin command-line tool to download audio and video (YouTube). This repository contains a Gradle-based CLI app.
+[![Download EXE](https://img.shields.io/badge/Download-EXE-blue.svg)](https://github.com/DevilForDevs/YtDownloaderKotlinCli/releases)
+
+Kotlin based command-line tool to download audio and video (YouTube). This repository contains a Gradle-based CLI app.
 
 ## Requirements
 - JDK 11 or newer
@@ -36,6 +38,14 @@ Screenshots of the app are in the screenshots/ directory. Add images there and r
 ![CLI output](screenshots/example.png)
 
 
+
+## Releases
+Pre-built Windows EXE binaries are available in the project's GitHub Releases.
+
+Download the latest EXE from the Releases page:
+https://github.com/DevilForDevs/YtDownloaderKotlinCli/releases
+
+(Or use the badge at the top of this README to jump to releases.)
 
 ## Contributing
 Open issues or PRs. Keep changes small and document behavior.
