@@ -1,0 +1,22 @@
+[
+  {
+    "name": "org.json.JSONObject",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "org.json.JSONArray",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name":"org.fusesource.jansi.Ansi",
+    "allDeclaredConstructors":true,
+    "allDeclaredMethods":true
+  },
+  {
+    "name":"org.fusesource.jansi.AnsiConsole",
+    "allDeclaredConstructors":true,
+    "allDeclaredMethods":true
+  }
+]
