@@ -3,28 +3,27 @@ package org.gralenv
 import blocks.askyoutubeurl.askYouTubeUrl
 import blocks.getplayerresponse.vrPlayerResponse
 import blocks.logo.printLogo
+import demuxers.HandlerType
+import demuxers.TrakFilter
+import demuxers.fmp4.FMp4Parser
 import extractionUtils.extractVisitorId
 import extractionUtils.getStreamsByCodec
-import muxer.mpfour.DashedParser
-import muxer.mpfour.DashedWriter
 import muxer.webm.WebMParser
 import muxer.webm.WebmMuxer
+import muxers.Mp4Muxer
 import org.fusesource.jansi.AnsiConsole
 import org.gralenv.utils.askItag
 import org.gralenv.utils.loadConfig
 import org.gralenv.utils.logStreams
+import org.gralenv.utils.playResolution
 import org.json.JSONArray
 import org.json.JSONObject
 import parsers.txt2filename
-import utils.clearConsole
-import utils.djDownloader
-import utils.findFormatByItag
-import utils.log
-import utils.logUpdate
+import utils.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.RandomAccessFile
-import java.nio.file.Files
+
 
 fun main() {
     AnsiConsole.systemInstall()
@@ -124,7 +123,16 @@ fun downloadVideo(visitorId: String) {
         )
 
         log("Selected itag: $itag")
-        downloadItag(adaptiveFormats,itag,title)
+        println(itag)
+        if (itag.contains("p",ignoreCase = true)){
+            playResolution(
+                adaptiveFormats = adaptiveFormats,
+                resolution = itag.replace("p","")
+            )
+        }else{
+            downloadItag(adaptiveFormats,itag.toInt(),title)
+        }
+
 
     }
 }
@@ -301,21 +309,18 @@ private fun mergeMp4(
     videoSize: Long,
     audioSize: Long
 ) {
-    val videoParser = DashedParser(raf, false, 0, videoSize)
-    val audioParser = DashedParser(raf, false, videoSize, videoSize + audioSize)
+    val videoParser = FMp4Parser(raf, false, 0, videoSize, TrakFilter(HandlerType.VIDEO))
+    videoParser.parse()
 
-    val totalSamples = videoParser.trunEntries + audioParser.trunEntries
-    var samplesWritten = 0
+    val audioParser= FMp4Parser(raf,false,videoSize, videoSize + audioSize,TrakFilter(HandlerType.AUDIO))
+    audioParser.parse()
 
     RandomAccessFile(File("${videoDir.absolutePath}/$title.mp4"), "rw").use { outRaf ->
-        DashedWriter(outRaf, 0, mutableListOf(videoParser, audioParser)) {
-            samplesWritten++
-            if (samplesWritten % 2000 == 0) {
-                val percent = (samplesWritten * 100) / totalSamples
-                logUpdate("Merging-$samplesWritten/$totalSamples $percent%")
-            }
-        }.buildNonFmp4()
+        Mp4Muxer(outRaf,  mutableListOf(videoParser, audioParser)) {progress->
+            logUpdate(progress)
+        }.mux()
     }
+
 }
 
 

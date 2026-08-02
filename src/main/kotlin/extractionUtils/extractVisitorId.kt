@@ -1,6 +1,7 @@
 package extractionUtils
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.util.concurrent.TimeUnit
 
 fun extractVisitorId(): String? {
     val client = OkHttpClient()
@@ -9,28 +10,30 @@ fun extractVisitorId(): String? {
         .url("https://www.youtube.com")
         .header(
             "User-Agent",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                    "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                    "Chrome/137.0.0.0 Safari/537.36"
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+                    "(KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
         )
         .build()
 
     client.newCall(request).execute().use { response ->
-        val html = response.body?.string()
-            ?: throw RuntimeException("Empty response")
+        val html = response.body?.string() ?: return null
 
-        val visitorData = Regex("\"VISITOR_DATA\":\"([^\"]+)\"")
-            .find(html)
-            ?.groupValues?.get(1)
+        val patterns = listOf(
+            """"visitorData"\s*:\s*"([^"]+)"""",
+            """"VISITOR_DATA"\s*:\s*"([^"]+)""""
+        )
 
-        val clientVersion = Regex("\"INNERTUBE_CLIENT_VERSION\":\"([^\"]+)\"")
-            .find(html)
-            ?.groupValues?.get(1)
+        for (pattern in patterns) {
+            val match = Regex(pattern)
+                .find(html)
+                ?.groupValues
+                ?.getOrNull(1)
 
-        val apiKey = Regex("\"INNERTUBE_API_KEY\":\"([^\"]+)\"")
-            .find(html)
-            ?.groupValues?.get(1)
+            if (match != null) {
+                return match
+            }
+        }
 
-        return visitorData
+        return null
     }
 }
